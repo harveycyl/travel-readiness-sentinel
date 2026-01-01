@@ -1,0 +1,9 @@
+*Dependencies needed to run the tool.*
+
+
+pydantic
+pyyaml
+pytest
+pytest-cov
+pandas
+openpyxl

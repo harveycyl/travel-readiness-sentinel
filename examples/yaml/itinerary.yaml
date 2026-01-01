@@ -1,0 +1,20 @@
+# Input Data: A Sample Trip to Tokyo
+trip_details:
+  destination: "Tokyo"
+  start_date: "2025-12-20"
+  end_date: "2025-12-27"
+  total_duration_days: 7
+
+flights:
+  - type: "arrival"
+    flight_number: "JL041"
+    arrival_date: "2025-12-20"  # Must match Hotel Check-in
+  
+  - type: "departure"
+    flight_number: "JL042"
+    departure_date: "2025-12-27" # Must match Trip End Date
+
+accommodation:
+  hotel_name: "Shinjuku Granbell"
+  check_in: "2025-12-20"
+  check_out: "2025-12-27" # Must cover full duration

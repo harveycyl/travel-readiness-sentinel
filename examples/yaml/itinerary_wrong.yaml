@@ -1,0 +1,20 @@
+# Input Data: A Problematic Trip with Multiple Issues
+trip_details:
+  destination: "London"
+  start_date: "2025-05-10"
+  end_date: "2025-05-17"
+  total_duration_days: 7
+
+flights:
+  - type: "arrival"
+    flight_number: "BA117"
+    arrival_date: "2025-05-11"  # ISSUE: Arrives 1 day AFTER hotel check-in
+  
+  - type: "departure"
+    flight_number: "BA118"
+    departure_date: "2025-05-16" # ISSUE: Departs 1 day BEFORE trip ends
+
+accommodation:
+  hotel_name: "The Savoy"
+  check_in: "2025-05-10"
+  check_out: "2025-05-15" # ISSUE: Hotel only covers 5 nights, but trip is 7 days

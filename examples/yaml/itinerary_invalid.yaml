@@ -1,0 +1,20 @@
+# Input Data: Trip with Data Validation Issues
+trip_details:
+  destination: "Tokyo"
+  start_date: "2025-12-20"
+  end_date: "2025-12-27"
+  # MISSING: total_duration_days field is required
+
+flights:
+  - type: "arrival"
+    flight_number: "JL"  # ISSUE: Flight number too short (minimum 3 characters)
+    arrival_date: "2025-12-20"
+  
+  - type: "departure"
+    flight_number: "JL042"
+    # MISSING: departure_date field is required for departure flights
+
+accommodation:
+  hotel_name: "Shinjuku Granbell"
+  check_in: "2025-12-20"
+  check_out: "2025-12-27"
