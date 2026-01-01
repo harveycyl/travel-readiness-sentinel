@@ -1,5 +1,4 @@
-*Dependencies needed to run the tool.*
-
+# Dependencies needed to run the tool.
 
 pydantic
 pyyaml
