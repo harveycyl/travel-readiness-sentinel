@@ -194,6 +194,7 @@ temp_*.yaml
 temp_*.xlsx
 test_*.yaml
 test_*.xlsx
+test_*.json
 *.tmp
 
 # Log files
@@ -210,3 +211,9 @@ temp.py
 /itinerary_*.xlsx
 my_*.yaml
 my_*.xlsx
+
+# Antigravity artifacts directory
+.gemini/
+
+# Coverage HTML reports
+htmlcov/

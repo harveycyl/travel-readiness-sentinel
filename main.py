@@ -60,8 +60,11 @@ def main():
     failures = 0
 
     for check in checks:
-        passed = check.run(itinerary)
-        if not passed:
+        result = check.run(itinerary)
+        if result.passed:
+            print(f"✅ [PASS] {result.check_name}")
+        else:
+            print(f"❌ [FAIL] {result.check_name}: {result.message}")
             failures += 1
 
     print("-" * 50)

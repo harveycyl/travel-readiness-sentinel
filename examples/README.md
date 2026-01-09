@@ -88,3 +88,48 @@ The YAML examples contain the same scenarios as Excel but in YAML format for use
 2. Try `itinerary_wrong.xlsx` to see business logic errors ❌  
 3. Try `itinerary_invalid.xlsx` to see data validation errors ❌
 4. Create your own itinerary using the template!
+
+---
+
+## 🌐 Using Examples with the API
+
+You can also validate these examples via the **REST API** (see main README for setup):
+
+### Upload a File
+
+```bash
+# Upload and validate an Excel file
+curl -X POST http://localhost:8000/upload \
+  -F "file=@examples/excel/itinerary_template.xlsx"
+
+# Upload and validate a YAML file
+curl -X POST http://localhost:8000/upload \
+  -F "file=@examples/yaml/itinerary.yaml"
+```
+
+### Interactive Testing
+
+1. Start the API server: `uvicorn src.api:app --reload`
+2. Open Swagger UI: http://localhost:8000/docs
+3. Try the `/upload` endpoint with any example file
+4. See structured JSON validation results
+
+**Response Format:**
+```json
+{
+  "status": "success",
+  "destination": "Tokyo",
+  "total_checks": 3,
+  "passed_checks": 3,
+  "failed_checks": 0,
+  "checks": [
+    {
+      "check_name": "Arrival Date Alignment",
+      "passed": true,
+      "message": "Flight arrival (2025-04-10) matches hotel check-in"
+    }
+  ]
+}
+```
+
+See the [main README](../README.md) for complete API documentation.

@@ -1,8 +1,18 @@
 # Dependencies needed to run the tool.
 
-pydantic
+# Core dependencies
+pydantic>=2.0.0
 pyyaml
-pytest
-pytest-cov
 pandas
 openpyxl
+
+# API dependencies
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+pydantic-settings>=2.0.0
+
+# Testing dependencies
+pytest
+pytest-cov
+httpx  # Required for FastAPI TestClient

@@ -60,17 +60,17 @@ class TestArrivalAlignmentCheck:
             )
         )
     
-    def test_arrival_alignment_pass(self, sample_itinerary, capsys):
+    def test_arrival_alignment_pass(self, sample_itinerary):
         """Test arrival alignment when dates match"""
         check = ArrivalAlignmentCheck("Arrival Date Alignment")
         
         result = check.run(sample_itinerary)
         
-        assert result is True
-        captured = capsys.readouterr()
-        assert "✅ [PASS] Arrival Date Alignment" in captured.out
+        assert result.passed is True
+        assert result.check_name == "Arrival Date Alignment"
+        assert "matches hotel check-in" in result.message
     
-    def test_arrival_alignment_fail(self, sample_itinerary, capsys):
+    def test_arrival_alignment_fail(self, sample_itinerary):
         """Test arrival alignment when dates don't match"""
         # Modify hotel check-in to be different from arrival
         sample_itinerary.accommodation.check_in = date(2025, 12, 21)
@@ -78,11 +78,9 @@ class TestArrivalAlignmentCheck:
         check = ArrivalAlignmentCheck("Arrival Date Alignment")
         result = check.run(sample_itinerary)
         
-        assert result is False
-        captured = capsys.readouterr()
-        assert "❌ [FAIL] Arrival Date Alignment" in captured.out
-        assert "Flight lands on 2025-12-20" in captured.out
-        assert "Hotel check-in is 2025-12-21" in captured.out
+        assert result.passed is False
+        assert "Flight lands on 2025-12-20" in result.message
+        assert "Hotel check-in is 2025-12-21" in result.message
 
 
 class TestDurationCoverageCheck:
@@ -117,17 +115,16 @@ class TestDurationCoverageCheck:
             )
         )
     
-    def test_duration_coverage_pass(self, sample_itinerary, capsys):
+    def test_duration_coverage_pass(self, sample_itinerary):
         """Test duration coverage when hotel covers full trip"""
         check = DurationCoverageCheck("Full Accommodation Coverage")
         
         result = check.run(sample_itinerary)
         
-        assert result is True
-        captured = capsys.readouterr()
-        assert "✅ [PASS] Full Accommodation Coverage" in captured.out
+        assert result.passed is True
+        assert "Hotel covers full trip duration" in result.message
     
-    def test_duration_coverage_pass_extra_nights(self, sample_itinerary, capsys):
+    def test_duration_coverage_pass_extra_nights(self, sample_itinerary):
         """Test duration coverage when hotel has extra nights"""
         # Extend hotel checkout by one day
         sample_itinerary.accommodation.check_out = date(2025, 12, 28)
@@ -135,11 +132,10 @@ class TestDurationCoverageCheck:
         check = DurationCoverageCheck("Full Accommodation Coverage")
         result = check.run(sample_itinerary)
         
-        assert result is True
-        captured = capsys.readouterr()
-        assert "✅ [PASS] Full Accommodation Coverage" in captured.out
+        assert result.passed is True
+        assert "8 nights >= 7 nights" in result.message
     
-    def test_duration_coverage_fail(self, sample_itinerary, capsys):
+    def test_duration_coverage_fail(self, sample_itinerary):
         """Test duration coverage when hotel is too short"""
         # Make hotel checkout one day early
         sample_itinerary.accommodation.check_out = date(2025, 12, 26)
@@ -147,11 +143,9 @@ class TestDurationCoverageCheck:
         check = DurationCoverageCheck("Full Accommodation Coverage")
         result = check.run(sample_itinerary)
         
-        assert result is False
-        captured = capsys.readouterr()
-        assert "❌ [FAIL] Full Accommodation Coverage" in captured.out
-        assert "Trip is 7 nights" in captured.out
-        assert "hotel is only 6 nights" in captured.out
+        assert result.passed is False
+        assert "Trip is 7 nights" in result.message
+        assert "hotel is only 6 nights" in result.message
 
 
 class TestDepartureAlignmentCheck:
@@ -186,17 +180,16 @@ class TestDepartureAlignmentCheck:
             )
         )
     
-    def test_departure_alignment_pass(self, sample_itinerary, capsys):
+    def test_departure_alignment_pass(self, sample_itinerary):
         """Test departure alignment when dates match"""
         check = DepartureAlignmentCheck("Exit Strategy Alignment")
         
         result = check.run(sample_itinerary)
         
-        assert result is True
-        captured = capsys.readouterr()
-        assert "✅ [PASS] Exit Strategy Alignment" in captured.out
+        assert result.passed is True
+        assert "matches trip end date" in result.message
     
-    def test_departure_alignment_fail(self, sample_itinerary, capsys):
+    def test_departure_alignment_fail(self, sample_itinerary):
         """Test departure alignment when dates don't match"""
         # Change departure flight date
         sample_itinerary.flights[1].departure_date = date(2025, 12, 28)
@@ -204,11 +197,9 @@ class TestDepartureAlignmentCheck:
         check = DepartureAlignmentCheck("Exit Strategy Alignment")
         result = check.run(sample_itinerary)
         
-        assert result is False
-        captured = capsys.readouterr()
-        assert "❌ [FAIL] Exit Strategy Alignment" in captured.out
-        assert "Trip ends on 2025-12-27" in captured.out
-        assert "flight is 2025-12-28" in captured.out
+        assert result.passed is False
+        assert "Trip ends on 2025-12-27" in result.message
+        assert "flight is 2025-12-28" in result.message
 
 
 class TestGetAllChecks:
@@ -255,7 +246,7 @@ class TestGetAllChecks:
 class TestIntegratedValidation:
     """Test integrated validation scenarios"""
     
-    def test_perfect_itinerary_all_pass(self, capsys):
+    def test_perfect_itinerary_all_pass(self):
         """Test that a perfect itinerary passes all checks"""
         itinerary = Itinerary(
             trip_details=TripContext(
@@ -287,15 +278,13 @@ class TestIntegratedValidation:
         failures = 0
         
         for check in checks:
-            if not check.run(itinerary):
+            result = check.run(itinerary)
+            if not result.passed:
                 failures += 1
         
         assert failures == 0
-        captured = capsys.readouterr()
-        assert captured.out.count("✅ [PASS]") == 3
-        assert captured.out.count("❌ [FAIL]") == 0
     
-    def test_problematic_itinerary_all_fail(self, capsys):
+    def test_problematic_itinerary_all_fail(self):
         """Test that a problematic itinerary fails all checks"""
         itinerary = Itinerary(
             trip_details=TripContext(
@@ -327,10 +316,8 @@ class TestIntegratedValidation:
         failures = 0
         
         for check in checks:
-            if not check.run(itinerary):
+            result = check.run(itinerary)
+            if not result.passed:
                 failures += 1
         
         assert failures == 3
-        captured = capsys.readouterr()
-        assert captured.out.count("✅ [PASS]") == 0
-        assert captured.out.count("❌ [FAIL]") == 3
