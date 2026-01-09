@@ -2,6 +2,24 @@
 
 **An automated "Pre-Flight" validation engine ensuring complete itinerary coverage before departure.**
 
+## 🎉 What's New in v1.0.0
+
+**Phase 1 Complete: FastAPI REST API Implementation**
+
+The Travel Readiness Sentinel now offers **two ways to validate** your itineraries:
+
+- ✅ **CLI Interface** - Original command-line tool (fully maintained)
+- 🆕 **REST API** - New FastAPI microservice for web/mobile integration
+  - 4 endpoints: `/`, `/health`, `/validate`, `/upload`
+  - Interactive Swagger documentation at `/docs`
+  - File upload support (Excel & YAML)
+  - Structured JSON responses
+  - Production-ready with CORS, error handling, and health checks
+
+**No Breaking Changes** - All existing CLI functionality preserved!
+
+---
+
 > **Note to Hiring Managers:** This repository is a semantic re-skin of a production **Data Readiness System** I architected at my company.
 >
 > I have mapped the domain concepts to **Travel Logic** to demonstrate how I solve data integrity problems:
@@ -54,6 +72,132 @@ For users who prefer Excel over YAML:
 3. **Run validation** directly on the Excel file
 
 The system automatically detects file type and converts Excel to the internal format.
+
+## 🌐 API Usage (NEW!)
+
+The Travel Readiness Sentinel is now available as a **REST API microservice** for integration with web applications, mobile apps, and other services.
+
+### Starting the API Server
+
+```bash
+# Install dependencies (including FastAPI)
+pip install -r requirements.txt
+
+# Start the API server
+uvicorn src.api:app --reload
+
+# Server will be available at http://localhost:8000
+# Interactive API docs at http://localhost:8000/docs
+```
+
+### API Endpoints
+
+#### `GET /` - API Information
+Returns API metadata and links to documentation.
+
+```bash
+curl http://localhost:8000/
+```
+
+#### `GET /health` - Health Check
+Health check endpoint for monitoring and load balancers.
+
+```bash
+curl http://localhost:8000/health
+```
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "version": "1.0.0",
+  "timestamp": "2025-04-10T12:00:00",
+  "checks": {
+    "api": "operational",
+    "validation_engine": "operational"
+  }
+}
+```
+
+#### `POST /validate` - Validate JSON Itinerary
+Validate a travel itinerary from JSON data.
+
+```bash
+curl -X POST http://localhost:8000/validate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "trip_details": {
+      "destination": "Tokyo",
+      "start_date": "2025-04-10",
+      "end_date": "2025-04-17",
+      "total_duration_days": 7
+    },
+    "flights": [
+      {
+        "type": "arrival",
+        "flight_number": "NH110",
+        "arrival_date": "2025-04-10"
+      },
+      {
+        "type": "departure",
+        "flight_number": "NH111",
+        "departure_date": "2025-04-17"
+      }
+    ],
+    "accommodation": {
+      "hotel_name": "Park Hyatt Tokyo",
+      "check_in": "2025-04-10",
+      "check_out": "2025-04-17"
+    }
+  }'
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "destination": "Tokyo",
+  "total_checks": 3,
+  "passed_checks": 3,
+  "failed_checks": 0,
+  "checks": [
+    {
+      "check_name": "Arrival Date Alignment",
+      "passed": true,
+      "message": "Flight arrival (2025-04-10) matches hotel check-in"
+    },
+    {
+      "check_name": "Full Accommodation Coverage",
+      "passed": true,
+      "message": "Hotel covers full trip duration (7 nights >= 7 nights)"
+    },
+    {
+      "check_name": "Exit Strategy Alignment",
+      "passed": true,
+      "message": "Departure flight (2025-04-17) matches trip end date"
+    }
+  ],
+  "timestamp": "2025-04-10T12:00:00"
+}
+```
+
+#### `POST /upload` - Upload and Validate File
+Upload and validate an Excel or YAML file.
+
+```bash
+curl -X POST http://localhost:8000/upload \
+  -F "file=@examples/excel/itinerary_template.xlsx"
+```
+
+Returns the same validation response format as `/validate`.
+
+### Interactive API Documentation
+
+Visit **http://localhost:8000/docs** for interactive Swagger UI documentation where you can:
+- Explore all endpoints
+- Test API calls directly from your browser
+- View request/response schemas
+- Download OpenAPI specification
 
 ## 🧪 Testing
 ```bash
