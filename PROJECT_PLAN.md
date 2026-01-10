@@ -236,7 +236,72 @@ class AIIngestion(IngestionSource):
 
 ---
 
-## 📊 Overall Progress
+## � Phase 5: Gmail Integration via MCP (PLANNED)
+
+**Goal:** Connect to Gmail using Model Context Protocol for email-based itinerary extraction
+
+**Time estimate:** 8-10 hours
+
+### What is MCP?
+
+**Model Context Protocol** - A standardized way for AI applications to connect to external data sources (Gmail, Drive, Slack, etc.) without managing APIs directly.
+
+### Architecture
+
+```
+TRS API → MCP Client → Gmail MCP Server → Gmail API → User's Emails
+```
+
+### Implementation Overview
+
+1. **MCP Setup** (2h)
+   - Install MCP client library
+   - Configure Gmail MCP server
+   - OAuth authentication flow
+
+2. **Email Fetching** (2h)
+   - Query travel-related emails via MCP
+   - Filter by keywords (flight, hotel, booking, itinerary)
+   - Return email list to user
+
+3. **User Selection** (2h)
+   - API endpoint to list emails
+   - User selects relevant emails
+   - Preview email content
+
+4. **Email → AI Extraction** (2h)
+   - Retrieve email body via MCP
+   - Pass to Phase 4 AI extraction
+   - Validate and return results
+
+5. **Testing & Documentation** (2h)
+
+### Key Benefits of MCP
+
+- ✅ **Standardized** - Works with any MCP-compatible service
+- ✅ **Maintained** - Community-maintained servers
+- ✅ **Secure** - OAuth handled properly
+- ✅ **Extensible** - Easy to add Outlook, iCloud later
+- ✅ **Less code** - Focus on business logic, not API integration
+
+### New Dependencies
+
+```txt
+mcp>=1.0.0                    # Model Context Protocol client
+google-auth>=2.0.0            # OAuth for Gmail
+```
+
+### New Endpoints
+
+```
+GET  /auth/gmail              # OAuth flow
+GET  /emails                  # List travel emails
+POST /extract-from-email      # Extract from selected email
+```
+
+---
+
+## �📊 Overall Progress
 
 | Phase | Status | Time Spent | Deliverables |
 |-------|--------|------------|--------------|
@@ -244,10 +309,11 @@ class AIIngestion(IngestionSource):
 | Phase 2: Docker | ✅ Complete | ~10 hours | Containerized app, compose |
 | Phase 3: Observability | 🚧 In Progress | 0/15 hours | Logging, metrics, clean code |
 | Phase 4: AI Ingestion | 📋 Planned | 0/10 hours | LLM extraction |
+| Phase 5: Gmail MCP | 📋 Planned | 0/10 hours | Email integration via MCP |
 
-**Total estimated:** ~55 hours
-**Completed:** ~30 hours (55%)
-**Remaining:** ~25 hours (45%)
+**Total estimated:** ~65 hours
+**Completed:** ~30 hours (46%)
+**Remaining:** ~35 hours (54%)
 
 ---
 
@@ -266,6 +332,13 @@ class AIIngestion(IngestionSource):
 3. ✅ AI metrics tracked separately
 4. ✅ Handles errors gracefully
 5. ✅ Documented with examples
+
+### Phase 5 Complete When:
+1. ✅ MCP client connected to Gmail
+2. ✅ Can fetch and filter travel emails
+3. ✅ User can select emails via API
+4. ✅ Selected emails extracted via Phase 4 AI
+5. ✅ OAuth flow working securely
 
 ---
 
