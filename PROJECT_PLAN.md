@@ -478,6 +478,79 @@ def test_gmail_fetch(mock_mcp):
     # Test Gmail integration without real OAuth
 ```
 
+### Mutation Testing (Detecting Fake Tests)
+
+**Problem:** AI-generated tests often pass but don't actually test anything.
+
+**Solution:** Mutation testing - automatically introduces bugs to see if tests catch them.
+
+**How it works:**
+1. Tool changes your code (e.g., `>` becomes `>=`, `*` becomes `+`)
+2. Runs your tests
+3. If tests **fail** → ✅ Good! Test caught the bug
+4. If tests **pass** → ❌ Bad! Test is fake/weak
+
+**Example:**
+```python
+# Your code
+def calculate_discount(price):
+    if price > 100:
+        return price * 0.9
+    return price
+
+# Your test
+def test_discount():
+    assert calculate_discount(150) == 135
+
+# Mutant 1: > becomes >=
+def calculate_discount(price):
+    if price >= 100:  # BUG introduced!
+        return price * 0.9
+    return price
+
+# If test still passes → test is weak!
+# Need to add: test_exactly_100()
+```
+
+**Setup:**
+```bash
+# Install
+pip install mutmut
+
+# Run mutation testing
+mutmut run
+
+# View results
+mutmut results
+
+# Show survived mutants (tests didn't catch)
+mutmut show
+```
+
+**Mutation Score Goals:**
+- ✅ **>80%** = Tests are effective
+- ⚠️ **60-80%** = Tests need improvement  
+- ❌ **<60%** = Tests are weak/fake
+
+**Common mutations:**
+- Arithmetic: `+` ↔ `-` ↔ `*` ↔ `/`
+- Comparison: `>` ↔ `>=` ↔ `<` ↔ `<=` ↔ `==`
+- Boolean: `and` ↔ `or`, `True` ↔ `False`
+- Constants: `3` → `4`, `0` → `1`
+- Return values: `return x` → `return None`
+
+**Add to CI/CD:**
+```yaml
+# .github/workflows/mutation-test.yml
+- name: Mutation Testing
+  run: |
+    mutmut run
+    mutmut results
+    # Fail if score < 80%
+```
+
+**Note:** Mutation testing is slow (runs tests many times). Run weekly or on important PRs, not every commit.
+
 ---
 
 ## 💬 Open Questions
