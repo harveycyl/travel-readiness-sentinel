@@ -183,23 +183,30 @@ prometheus-client>=0.19.0
 
 **Time estimate:** 10 hours (thanks to Phase 3 foundation!)
 
+**LLM Provider:** Google AI (Gemini) - using your existing Google AI Pro subscription!
+
 ### What Phase 3 Enables
 
 With Phase 3 complete, Phase 4 becomes simple:
 
 ```python
 # src/ingestion/ai.py
+import google.generativeai as genai
+
 class AIIngestion(IngestionSource):
+    def __init__(self):
+        genai.configure(api_key=settings.google_ai_api_key)
+        self.model = genai.GenerativeModel('gemini-1.5-pro')
+    
     async def parse(self, text: str) -> Dict[str, Any]:
         # Just implement this method!
-        response = await openai.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": EXTRACTION_PROMPT},
-                {"role": "user", "content": text}
-            ]
+        response = self.model.generate_content(
+            EXTRACTION_PROMPT + text,
+            generation_config={
+                "response_mime_type": "application/json"  # Native JSON mode!
+            }
         )
-        return json.loads(response.choices[0].message.content)
+        return json.loads(response.text)
 ```
 
 **Everything else already works:**
@@ -208,31 +215,61 @@ class AIIngestion(IngestionSource):
 - ✅ Validation (same Pydantic models)
 - ✅ API (unified endpoint)
 
+**Why Google AI (Gemini)?**
+- ✅ You have Google AI Pro subscription (no extra cost!)
+- ✅ 2M token context window (handles long emails)
+- ✅ Native JSON mode (perfect for structured extraction)
+- ✅ Multimodal (can handle images if needed)
+
 ### Phase 4 Tasks
 
-1. **LLM Integration** (3 hours)
-   - OpenAI API setup
-   - Prompt engineering
+1. **Google AI Integration** (3 hours)
+   - Install `google-generativeai` SDK
+   - Configure Gemini 1.5 Pro
+   - Prompt engineering for JSON extraction
    - Response parsing
 
 2. **Safety Rails** (2 hours)
    - Validate LLM output with Pydantic
    - Handle hallucinations
    - Confidence scoring
+   - Fallback to OpenAI (optional)
 
 3. **AI Monitoring** (2 hours)
    - Track extraction success rate
-   - Monitor API costs
+   - Monitor token usage
    - Log LLM interactions
+   - Compare Google AI vs manual accuracy
 
 4. **Testing** (2 hours)
-   - Test with various text formats
-   - Edge cases
+   - Test with various text formats (emails, PDFs, chat)
+   - Edge cases (incomplete info, ambiguous dates)
    - Error handling
 
 5. **Documentation** (1 hour)
    - API examples
    - Prompt templates
+   - Configuration guide
+
+### Dependencies
+
+```txt
+# Google AI (Primary - using your subscription!)
+google-generativeai>=0.3.0
+
+# OpenAI (Optional fallback)
+# openai>=1.0.0
+```
+
+### Configuration
+
+```python
+# .env
+AI_ENABLED=true
+AI_PROVIDER=google  # or "openai"
+GOOGLE_AI_API_KEY=your_api_key_here
+GOOGLE_AI_MODEL=gemini-1.5-pro
+```
 
 ---
 
@@ -350,9 +387,9 @@ POST /extract-from-email      # Extract from selected email
 3. Any code quality tools? (black, ruff, mypy?)
 
 **For Phase 4:**
-1. Which LLM? (OpenAI GPT-4, Anthropic Claude, local?)
-2. What text sources? (email, chat, documents?)
-3. Budget for API costs?
+1. ✅ **LLM decided:** Google AI (Gemini 1.5 Pro) - using your subscription!
+2. What text sources to prioritize? (email, chat, documents, PDFs?)
+3. Should we add OpenAI as fallback option?
 
 ---
 
