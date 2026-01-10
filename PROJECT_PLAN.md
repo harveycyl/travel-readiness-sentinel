@@ -1,281 +1,294 @@
-# Travel Readiness Sentinel - Enterprise Microservice Project Plan
+# Travel Readiness Sentinel - Project Plan
 
-## Overview
-Transform the current Python CLI validation tool into a production-grade enterprise microservice with AI capabilities.
+## 🎯 Project Overview
 
-**Current State**: CLI tool that validates travel itineraries from Excel/YAML files using Pydantic models and business logic checks.
+Transform a Python CLI validation tool into a production-grade microservice with observability and AI capabilities.
 
-**Target State**: Containerized FastAPI microservice with observability, AI ingestion capabilities, and enterprise-grade reliability.
-
----
-
-## Phase 1: Refactor to API (FastAPI)
-**Goal**: Transform the standalone CLI script into a stateless REST API
-
-### 1.1 Core Logic Refactoring
-- [ ] Create `src/core/` directory structure
-- [ ] Move validation logic from `main.py` to `src/core/validators.py`
-- [ ] Extract business rules to `src/core/business_rules.py`
-- [ ] Move Pydantic models to `src/core/models.py`
-- [ ] Create `src/core/parsers.py` for Excel/YAML parsing logic
-- [ ] Add `__init__.py` files to make modules importable
-- [ ] Update imports and ensure clean separation of concerns
-
-### 1.2 FastAPI Implementation
-- [ ] Add FastAPI and uvicorn to `requirements.txt`
-- [ ] Create `src/api.py` with FastAPI application instance
-- [ ] Implement CORS middleware for web client support
-- [ ] Add request/response models for API endpoints
-
-### 1.3 API Endpoints
-#### POST /validate
-- [ ] Accept JSON body matching Pydantic Itinerary model
-- [ ] Run validation logic and return structured JSON report
-- [ ] Include validation status, errors, and success messages
-- [ ] Add proper HTTP status codes (200 for valid, 422 for invalid)
-
-#### POST /upload
-- [ ] Accept multipart/form-data with .xlsx file
-- [ ] Parse Excel file using existing logic
-- [ ] Convert to internal Pydantic model
-- [ ] Return validation report in same format as /validate
-
-#### GET /
-- [ ] Root endpoint with API information and version
-- [ ] Links to documentation and health check
-
-### 1.4 Documentation & Testing
-- [ ] Ensure Swagger UI available at `/docs`
-- [ ] Add OpenAPI metadata (title, description, version)
-- [ ] Create example request/response bodies
-- [ ] Add basic unit tests for API endpoints
-- [ ] Test file upload functionality
-
-### 1.5 Configuration
-- [ ] Create `src/config.py` for environment-based configuration
-- [ ] Add development vs production settings
-- [ ] Configure CORS origins, API keys, etc.
-
-**Deliverables**:
-- Refactored codebase with clean separation
-- Working FastAPI application
-- Two functional endpoints
-- Swagger documentation
-- Basic test coverage
+**Current Status:** Phase 2 Complete (Dockerized FastAPI)
+**Next:** Phase 3 (Observability + Maintainability + AI Foundation)
 
 ---
 
-## Phase 2: Containerization (Docker)
-**Goal**: Make the application deployable anywhere with consistent behavior
+## ✅ Phase 1: FastAPI Implementation (COMPLETE)
 
-### 2.1 Dockerfile Creation
-- [ ] Create multi-stage Dockerfile
-- [ ] Use `python:3.11-slim` as base image
-- [ ] Create non-root user for security
-- [ ] Install system dependencies if needed
-- [ ] Copy requirements.txt and install Python packages
-- [ ] Copy application code
-- [ ] Expose port 8000
-- [ ] Configure uvicorn as entry point
+**Completed:** January 2026
 
-### 2.2 Docker Optimization
-- [ ] Implement multi-stage build to reduce image size
-- [ ] Use `.dockerignore` to exclude unnecessary files
-- [ ] Cache pip packages for faster builds
-- [ ] Set appropriate labels and metadata
+**What was built:**
+- REST API with FastAPI
+- 4 endpoints: `/`, `/health`, `/validate`, `/upload`
+- Pydantic models for validation
+- Excel and YAML file parsing
+- Swagger UI documentation at `/docs`
+- 55 passing tests
 
-### 2.3 Docker Compose Setup
-- [ ] Create `docker-compose.yaml` for local development
-- [ ] Configure environment variables
-- [ ] Set up volume mounting for development
-- [ ] Add health checks
-- [ ] Configure restart policies
-
-### 2.4 Container Testing
-- [ ] Build and test container locally
-- [ ] Verify all endpoints work in containerized environment
-- [ ] Test file upload functionality in container
-- [ ] Validate environment variable handling
-
-### 2.5 Deployment Preparation
-- [ ] Create `.env.example` file
-- [ ] Document container deployment process
-- [ ] Add container security best practices
-- [ ] Prepare for cloud deployment (optional)
-
-**Deliverables**:
-- Production-ready Dockerfile
-- Docker Compose configuration
-- Container deployment documentation
-- Tested containerized application
+**Key files:**
+- `src/api.py` - FastAPI application
+- `src/model.py` - Pydantic models
+- `src/validation.py` - Business logic
+- `src/excel_reader.py` - Excel parsing
+- `src/schemas.py` - API schemas
 
 ---
 
-## Phase 3: Observability (Structured Logging)
-**Goal**: Replace print statements with enterprise-grade logging and monitoring
+## ✅ Phase 2: Docker Containerization (COMPLETE)
 
-### 3.1 Structured Logging Implementation
-- [ ] Add `structlog` to requirements.txt
-- [ ] Create `src/logging_config.py`
-- [ ] Configure JSON output format
-- [ ] Set up different log levels (DEBUG, INFO, WARN, ERROR)
-- [ ] Replace all print() statements with structured logs
+**Completed:** January 2026
 
-### 3.2 FastAPI Middleware Integration
-- [ ] Create correlation ID middleware
-- [ ] Generate unique `request_id` for each incoming request
-- [ ] Include `request_id` in all logs for request tracing
-- [ ] Add request/response logging middleware
-- [ ] Log request method, path, duration, status code
+**What was built:**
+- Multi-stage Dockerfile (515MB image, 110MB content)
+- Docker Compose for local development
+- Non-root user for security
+- Health checks
+- `.dockerignore` for optimization
 
-### 3.3 Application Logging
-- [ ] Add structured logging to validation logic
-- [ ] Log validation start/completion events
-- [ ] Log validation failures with detailed context
-- [ ] Log file upload events and metadata
-- [ ] Add performance timing logs
+**Key files:**
+- `Dockerfile` - Multi-stage build
+- `docker-compose.yml` - Local dev setup
+- `.dockerignore` - Build optimization
 
-### 3.4 Health Check Endpoint
-- [ ] Implement `GET /health` endpoint
-- [ ] Return `{"status": "ok", "timestamp": "...", "version": "..."}` 
-- [ ] Add dependency checks (database, external services if any)
-- [ ] Configure for Kubernetes readiness/liveness probes
-
-### 3.5 Monitoring Integration Ready
-- [ ] Structure logs for easy parsing by monitoring tools
-- [ ] Add application metrics logging
-- [ ] Include error tracking context
-- [ ] Prepare for integration with monitoring platforms
-
-**Deliverables**:
-- Fully structured JSON logging
-- Request correlation tracking
-- Health check endpoint
-- Production-ready observability
+**Deployment:**
+```bash
+docker-compose up -d
+# API available at http://localhost:8000
+```
 
 ---
 
-## Phase 4: AI Ingestion Layer
-**Goal**: Enable unstructured text ingestion via LLM with deterministic validation safeguards
+## 🚧 Phase 3: Observability + Maintainability + AI Foundation (IN PROGRESS)
 
-### 4.1 LLM Integration Setup
-- [ ] Add OpenAI SDK or LangChain to requirements.txt
-- [ ] Create `src/ai/` directory structure
-- [ ] Implement `src/ai/llm_client.py` for LLM interactions
-- [ ] Add environment variables for API keys
-- [ ] Create prompt templates for itinerary extraction
+**Goal:** Production-grade monitoring + clean architecture + prepare for AI
 
-### 4.2 Text Ingestion Endpoint
-#### POST /ingest-text
-- [ ] Accept `{"text": "raw email/document content"}`
-- [ ] Implement text preprocessing and cleaning
-- [ ] Send to LLM for structured extraction
-- [ ] Return extracted data + validation results
+**Time estimate:** 12-15 hours
 
-### 4.3 LLM Prompt Engineering
-- [ ] Design prompts to extract itinerary data from text
-- [ ] Create examples for few-shot learning
-- [ ] Handle various text formats (emails, documents, chat messages)
-- [ ] Implement prompt versioning and A/B testing capability
+### Part A: Observability (6-8 hours)
 
-### 4.4 Safety Rails Implementation
-- [ ] Create `src/ai/safety.py` for validation pipeline
-- [ ] Pass LLM output immediately to existing Pydantic validators
-- [ ] Implement confidence scoring for extracted data
-- [ ] Add fallback mechanisms for low-confidence extractions
-- [ ] Log LLM interactions for monitoring and improvement
+#### A1. Structured Logging ⭐ ESSENTIAL
+- JSON-formatted logs with context
+- Track request IDs, source types (excel/yaml/ai)
+- **Dependencies:** `python-json-logger>=2.0.0`
+- **Time:** 3 hours
 
-### 4.5 Enhanced Validation Pipeline
-- [ ] Extend validation to include AI-extracted data quality metrics
-- [ ] Add validation for common LLM hallucinations (invalid dates, impossible locations)
-- [ ] Implement human-in-the-loop flagging for uncertain cases
-- [ ] Create validation report that distinguishes AI vs manual input
+#### A2. Request/Response Middleware ⭐ ESSENTIAL
+- Auto-log every API call
+- Track duration, status codes
+- **Time:** 1 hour
 
-### 4.6 AI Monitoring and Observability
-- [ ] Log all LLM requests and responses
-- [ ] Track extraction success rates
-- [ ] Monitor API usage and costs
-- [ ] Add alerting for validation failures
-- [ ] Implement A/B testing for prompt improvements
+#### A3. Metrics Endpoint ⭐ IMPORTANT
+- Prometheus-compatible metrics
+- Track: request count, latency, error rate
+- Separate metrics for AI vs manual inputs
+- **Dependencies:** `prometheus-client>=0.19.0`
+- **Time:** 2-3 hours
 
-**Deliverables**:
-- AI-powered text ingestion endpoint
-- Robust safety validation pipeline
-- LLM interaction monitoring
-- Production-ready AI integration
+#### A4. Enhanced Health Checks
+- Detailed component status
+- Include metrics in health response
+- **Time:** 1 hour
 
 ---
 
-## Success Criteria
+### Part B: Maintainability (4-5 hours)
 
-### Phase 1 Success Metrics
-- [ ] All existing CLI functionality available via API
-- [ ] Swagger documentation accessible
-- [ ] File upload working correctly
-- [ ] Response time < 2 seconds for typical validation
+#### B1. Code Organization ⭐ ESSENTIAL
 
-### Phase 2 Success Metrics
-- [ ] Container builds in < 5 minutes
-- [ ] Container image size < 500MB
-- [ ] Application starts in < 30 seconds
-- [ ] All endpoints functional in container
+**New structure:**
+```
+src/
+├── api.py                  # FastAPI app
+├── config.py              # Settings (AI-ready)
+├── middleware.py          # NEW: Logging
+├── metrics.py             # NEW: Prometheus
+├── logging_config.py      # NEW: Logging setup
+│
+├── core/                  # NEW: Core logic
+│   ├── model.py
+│   ├── validation.py
+│   └── schemas.py
+│
+├── ingestion/            # NEW: Input processing (AI-ready!)
+│   ├── base.py           # Abstract base class
+│   ├── excel.py          # Excel reader (refactored)
+│   ├── yaml.py           # YAML reader
+│   └── ai.py             # AI stub (Phase 4)
+│
+└── utils/
+    └── helpers.py
+```
 
-### Phase 3 Success Metrics
-- [ ] All logs in structured JSON format
-- [ ] Request correlation working across all operations
-- [ ] Health check responds in < 100ms
-- [ ] No print() statements in production code
+**Time:** 2-3 hours
 
-### Phase 4 Success Metrics
-- [ ] AI extraction accuracy > 80% for well-formatted text
-- [ ] Safety rails catch 100% of invalid dates/data
-- [ ] End-to-end response time < 10 seconds
-- [ ] Cost per extraction < $0.10
+#### B2. Abstract Base Classes ⭐ IMPORTANT
 
----
+Create `IngestionSource` interface:
+- Consistent API for all input types
+- Easy to add AI without changing existing code
+- **Time:** 2 hours
 
-## Technical Debt and Considerations
-
-### Security
-- [ ] Input validation and sanitization
-- [ ] Rate limiting implementation
-- [ ] API authentication (Phase 4+)
-- [ ] Secrets management for AI API keys
-
-### Performance
-- [ ] Async processing for file uploads
-- [ ] Caching for repeated validations
-- [ ] Connection pooling for external services
-- [ ] Resource usage monitoring
-
-### Scalability
-- [ ] Stateless design maintained throughout
-- [ ] Database integration planning (if needed)
-- [ ] Queue system for long-running AI processing
-- [ ] Load testing preparation
-
-### Maintenance
-- [ ] Automated testing pipeline
-- [ ] Dependency update strategy
-- [ ] Documentation maintenance
-- [ ] Version management strategy
+#### B3. Configuration Management
+- Centralize settings in `config.py`
+- AI settings prepared (disabled by default)
+- **Time:** 30 minutes
 
 ---
 
-## Timeline Estimation
+### Part C: AI Foundation (2 hours)
 
-- **Phase 1**: 2-3 weeks (40-60 hours)
-- **Phase 2**: 1 week (20 hours)
-- **Phase 3**: 1-2 weeks (20-40 hours)
-- **Phase 4**: 2-3 weeks (40-60 hours)
+#### C1. Unified Ingestion Pipeline ⭐ ESSENTIAL
+- Single validation endpoint for all input types
+- AI slots in seamlessly
+- **Time:** 1 hour
 
-**Total**: 6-9 weeks (120-180 hours)
+#### C2. AI Placeholder
+- Create stub `AIIngestion` class
+- Documents future capability
+- **Time:** 30 minutes
+
+#### C3. Documentation
+- Update README with planned AI features
+- **Time:** 30 minutes
 
 ---
 
-## Next Steps
-1. Review and approve this plan
-2. Set up development environment for Phase 1
-3. Create feature branch for Phase 1 development
-4. Begin with core logic refactoring
-5. Implement iterative development with regular testing
+### Implementation Order
+
+**Week 1: Observability (6-8 hours)**
+1. Structured logging (A1)
+2. Request middleware (A2)
+3. Metrics endpoint (A3)
+
+**Week 2: Maintainability + AI Prep (6-7 hours)**
+4. Code organization (B1)
+5. Abstract base classes (B2)
+6. Unified pipeline (C1)
+7. AI placeholder (C2)
+
+---
+
+### Dependencies to Add
+
+```txt
+# Observability
+python-json-logger>=2.0.0
+prometheus-client>=0.19.0
+
+# AI (Phase 4 - commented out)
+# openai>=1.0.0
+```
+
+---
+
+## 🔮 Phase 4: AI Ingestion Layer (PLANNED)
+
+**Goal:** Extract itineraries from unstructured text using LLM
+
+**Time estimate:** 10 hours (thanks to Phase 3 foundation!)
+
+### What Phase 3 Enables
+
+With Phase 3 complete, Phase 4 becomes simple:
+
+```python
+# src/ingestion/ai.py
+class AIIngestion(IngestionSource):
+    async def parse(self, text: str) -> Dict[str, Any]:
+        # Just implement this method!
+        response = await openai.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": EXTRACTION_PROMPT},
+                {"role": "user", "content": text}
+            ]
+        )
+        return json.loads(response.choices[0].message.content)
+```
+
+**Everything else already works:**
+- ✅ Logging (tracks AI separately)
+- ✅ Metrics (monitors AI success rate)
+- ✅ Validation (same Pydantic models)
+- ✅ API (unified endpoint)
+
+### Phase 4 Tasks
+
+1. **LLM Integration** (3 hours)
+   - OpenAI API setup
+   - Prompt engineering
+   - Response parsing
+
+2. **Safety Rails** (2 hours)
+   - Validate LLM output with Pydantic
+   - Handle hallucinations
+   - Confidence scoring
+
+3. **AI Monitoring** (2 hours)
+   - Track extraction success rate
+   - Monitor API costs
+   - Log LLM interactions
+
+4. **Testing** (2 hours)
+   - Test with various text formats
+   - Edge cases
+   - Error handling
+
+5. **Documentation** (1 hour)
+   - API examples
+   - Prompt templates
+
+---
+
+## 📊 Overall Progress
+
+| Phase | Status | Time Spent | Deliverables |
+|-------|--------|------------|--------------|
+| Phase 1: FastAPI | ✅ Complete | ~20 hours | REST API, 4 endpoints, tests |
+| Phase 2: Docker | ✅ Complete | ~10 hours | Containerized app, compose |
+| Phase 3: Observability | 🚧 In Progress | 0/15 hours | Logging, metrics, clean code |
+| Phase 4: AI Ingestion | 📋 Planned | 0/10 hours | LLM extraction |
+
+**Total estimated:** ~55 hours
+**Completed:** ~30 hours (55%)
+**Remaining:** ~25 hours (45%)
+
+---
+
+## 🎯 Success Criteria
+
+### Phase 3 Complete When:
+1. ✅ All requests logged in JSON format
+2. ✅ `/metrics` endpoint shows request count, latency, errors
+3. ✅ Code organized with `core/` and `ingestion/` modules
+4. ✅ Abstract base class for all input types
+5. ✅ AI placeholder created and documented
+
+### Phase 4 Complete When:
+1. ✅ Can extract itinerary from plain text
+2. ✅ LLM output validated by Pydantic
+3. ✅ AI metrics tracked separately
+4. ✅ Handles errors gracefully
+5. ✅ Documented with examples
+
+---
+
+## 💬 Open Questions
+
+**For Phase 3:**
+1. Prometheus metrics or simple JSON?
+2. Logs to stdout (Docker best practice) or files?
+3. Any code quality tools? (black, ruff, mypy?)
+
+**For Phase 4:**
+1. Which LLM? (OpenAI GPT-4, Anthropic Claude, local?)
+2. What text sources? (email, chat, documents?)
+3. Budget for API costs?
+
+---
+
+## 📝 Notes
+
+- Phase 3 makes Phase 4 much easier (10h instead of 20h+)
+- Clean architecture allows easy extension
+- All phases maintain backward compatibility
+- Docker setup unchanged throughout
+
+**Last updated:** January 10, 2026
+**Current branch:** `phase-3-observability`
