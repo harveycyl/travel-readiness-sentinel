@@ -379,6 +379,107 @@ POST /extract-from-email      # Extract from selected email
 
 ---
 
+## 🧪 Testing Strategy
+
+### Current Status
+- **Phase 1-2:** 46 tests passing
+- **Coverage:** Unit, integration, and E2E tests
+- **Framework:** pytest
+
+### Test Organization
+
+**After Phase 3 refactoring:**
+```
+tests/
+├── unit/                    # Fast unit tests
+│   ├── test_models.py
+│   ├── test_validation.py
+│   ├── test_middleware.py  # NEW
+│   └── test_metrics.py     # NEW
+│
+├── ingestion/              # Ingestion tests
+│   ├── test_base.py        # NEW - abstract base
+│   ├── test_excel.py       # Refactored
+│   ├── test_yaml.py        # NEW
+│   └── test_ai.py          # Phase 4
+│
+├── integration/            # Integration tests
+│   ├── test_api.py
+│   └── test_end_to_end.py
+│
+└── conftest.py             # Shared fixtures
+```
+
+### Testing Rules
+
+**1. NEVER delete working tests**
+- Keep all existing tests as regression protection
+- Only delete if feature is completely removed
+- Update imports when refactoring
+
+**2. Add tests for new features**
+- Every new feature = new tests
+- Maintain test coverage above 80%
+
+**3. Test pyramid**
+- 70% unit tests (fast, many)
+- 20% integration tests (medium, some)
+- 10% E2E tests (slow, few)
+
+### Phase-by-Phase Test Growth
+
+| Phase | Test Count | New Tests |
+|-------|------------|-----------|
+| Phase 1-2 | 46 | Baseline |
+| Phase 3 | ~65 | Middleware, metrics, ingestion base |
+| Phase 4 | ~80 | AI ingestion (mocked) |
+| Phase 5 | ~100 | Gmail MCP (mocked) |
+
+### CI/CD (Recommended)
+
+**Add GitHub Actions:**
+```yaml
+# .github/workflows/test.yml
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt pytest pytest-cov
+      - run: pytest --cov=src --cov-fail-under=80
+```
+
+**Benefits:**
+- ✅ Auto-run tests on every push
+- ✅ Can't merge if tests fail
+- ✅ Coverage enforcement
+- ✅ Production confidence
+
+### Mocking External Services
+
+**Phase 4 (AI):**
+```python
+@patch('src.ingestion.ai.genai.GenerativeModel')
+def test_ai_extraction(mock_model):
+    mock_model.return_value.generate_content.return_value.text = '{"destination": "Paris"}'
+    # Test AI extraction without calling real API
+```
+
+**Phase 5 (Gmail):**
+```python
+@patch('src.integrations.gmail.mcp_client')
+def test_gmail_fetch(mock_mcp):
+    mock_mcp.query.return_value = [mock_email]
+    # Test Gmail integration without real OAuth
+```
+
+---
+
 ## 💬 Open Questions
 
 **For Phase 3:**
