@@ -33,7 +33,21 @@ Planning complex trips involves multiple data sources (flights, hotels, calendar
 
 ## 🚀 Quick Start
 
-### Option 1: API Server (Recommended)
+### Option 1: Docker (Recommended)
+
+```bash
+# Using docker-compose (easiest)
+docker-compose up -d
+
+# Or using Docker directly
+docker build -t trs-api .
+docker run -p 8000:8000 trs-api
+
+# Access the API
+open http://localhost:8000/docs
+```
+
+### Option 2: API Server (Local Development)
 
 ```bash
 # 1. Install dependencies
@@ -46,18 +60,12 @@ uvicorn src.api:app --reload
 open http://localhost:8000/docs
 ```
 
-### Option 2: Command Line
+### Option 3: Command Line
 
 ```bash
 # Install and run validation
 pip install -r requirements.txt
 python main.py --itinerary examples/yaml/itinerary.yaml
-```
-
-### Option 3: Docker (Coming Soon - Phase 2)
-
-```bash
-docker run -p 8000:8000 travel-readiness-sentinel
 ```
 
 ---
@@ -360,31 +368,93 @@ ALLOWED_FILE_EXTENSIONS=[".xlsx",".yaml",".yml"]
 
 ## 🚢 Deployment
 
+### Docker (Recommended)
+
+**Using docker-compose (Development):**
+```bash
+# Start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f api
+
+# Stop services
+docker-compose down
+```
+
+**Using Docker directly:**
+```bash
+# Build image
+docker build -t trs-api .
+
+# Run container
+docker run -d \
+  --name trs-api \
+  -p 8000:8000 \
+  --restart unless-stopped \
+  trs-api
+
+# View logs
+docker logs -f trs-api
+
+# Stop container
+docker stop trs-api && docker rm trs-api
+```
+
+**Production deployment with resource limits:**
+```bash
+docker run -d \
+  --name trs-api \
+  -p 8000:8000 \
+  --memory="512m" \
+  --cpus="1" \
+  --restart=unless-stopped \
+  -e DEBUG=false \
+  -e CORS_ORIGINS='["https://yourdomain.com"]' \
+  trs-api
+```
+
 ### Local Development
 
 ```bash
 uvicorn src.api:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Production
+### Production (No Docker)
 
 ```bash
 uvicorn src.api:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
-### Docker (Phase 2 - Coming Soon)
-
-```bash
-docker build -t trs-api .
-docker run -p 8000:8000 trs-api
-```
-
 ### Cloud Platforms
 
-- **AWS:** ECS, Fargate, or Lambda
-- **Google Cloud:** Cloud Run or GKE
-- **Azure:** Container Instances or AKS
-- **Heroku:** `heroku container:push web`
+**AWS ECS/Fargate:**
+```bash
+# Push to ECR
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account>.dkr.ecr.us-east-1.amazonaws.com
+docker tag trs-api:latest <account>.dkr.ecr.us-east-1.amazonaws.com/trs-api:latest
+docker push <account>.dkr.ecr.us-east-1.amazonaws.com/trs-api:latest
+```
+
+**Google Cloud Run:**
+```bash
+# Build and deploy
+gcloud builds submit --tag gcr.io/<project-id>/trs-api
+gcloud run deploy trs-api --image gcr.io/<project-id>/trs-api --platform managed
+```
+
+**Azure Container Instances:**
+```bash
+# Push to ACR
+az acr build --registry <registry-name> --image trs-api:latest .
+az container create --resource-group <group> --name trs-api --image <registry>.azurecr.io/trs-api:latest --ports 8000
+```
+
+**Heroku:**
+```bash
+heroku container:push web
+heroku container:release web
+```
 
 ---
 
@@ -445,11 +515,12 @@ flights.1
 - File upload support
 - Comprehensive testing
 
-### 🚧 Phase 2: Docker Containerization (In Progress)
-- Multi-stage Dockerfile
+### ✅ Phase 2: Docker Containerization (Complete)
+- Multi-stage Dockerfile (optimized image size)
 - Docker Compose for local development
-- Production-optimized images
-- Container orchestration ready
+- Health checks and graceful shutdown
+- Production-ready container configuration
+- Cloud deployment examples
 
 ### 📋 Phase 3: Observability (Planned)
 - Structured logging (JSON format)

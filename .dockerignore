@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+.env
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+*.cover
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation artifacts
+.gemini/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Temporary files
+*.tmp
+*.log
+test_*.json
+temp_*.yaml
+temp_*.xlsx
+
+# Personal files
+my_*.yaml
+my_*.xlsx
+
+# Documentation (keep examples)
+README.md
+LICENSE
+PROJECT_PLAN.md
+*.md
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
