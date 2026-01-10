@@ -217,3 +217,5 @@ my_*.xlsx
 
 # Coverage HTML reports
 htmlcov/
+# Documentation (AI planning artifacts - not for production)
+docs/
