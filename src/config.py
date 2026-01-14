@@ -29,8 +29,10 @@ class Settings(BaseSettings):
     max_upload_size_mb: int = 10
     allowed_file_extensions: List[str] = [".xlsx", ".yaml", ".yml"]
     
-    # Logging
+    # Observability Configuration
     log_level: str = "INFO"
+    log_format: str = "json"  # "json" or "text"
+    enable_metrics: bool = True
     
     model_config = SettingsConfigDict(
         env_file=".env",

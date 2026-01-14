@@ -1,603 +1,244 @@
 # 🧳 Travel Readiness Sentinel
 
-> **A production-grade FastAPI microservice for validating travel itinerary completeness**
+> **An intelligent API that validates travel itineraries to prevent booking errors**
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/tests-55%20passing-brightgreen.svg)](tests/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
-**Live Demo:** [API Documentation](http://localhost:8000/docs) • [Health Check](http://localhost:8000/health)
+[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green.svg)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+[![Tests](https://img.shields.io/badge/Tests-53%20Passing-brightgreen.svg)](tests/)
 
 ---
 
-## 📖 Overview
+## 💡 What Does This Do?
 
-Travel Readiness Sentinel (TRS) is a **data validation microservice** that ensures travel itineraries are complete and logically consistent before departure. It validates that flights, hotels, and trip dates align correctly—preventing costly booking errors.
+Ever booked a flight that departs **before** your hotel checkout? Or arrived at your destination **after** your hotel check-in time? This API automatically catches these mistakes **before** you book.
 
-### 🎯 The Problem It Solves
+**Real-world problem it solves:**
+- ✅ Validates flight dates match hotel reservations
+- ✅ Ensures your hotel covers your entire trip
+- ✅ Checks you have a flight home on your last day
+- ✅ Prevents costly booking errors
 
-Planning complex trips involves multiple data sources (flights, hotels, calendars). A single misalignment—like a hotel check-out before your departure flight—can ruin a trip. TRS automates the validation of these critical alignments.
+---
 
-### ✨ Key Features
+## 🎯 Why I Built This
 
-- 🚀 **FastAPI REST API** - Production-ready microservice with 4 endpoints
-- 📊 **Multiple Input Formats** - Excel, YAML, or JSON
-- ✅ **Smart Validation** - 3 critical business logic checks
-- 📚 **Auto-Generated Docs** - Interactive Swagger UI at `/docs`
-- 🧪 **Fully Tested** - 55 tests with 100% pass rate
-- 🐳 **Docker Ready** - Containerized for easy deployment
-- 🔧 **CLI Support** - Command-line interface for local use
+This project demonstrates my ability to build **production-ready backend systems** with:
+- Modern Python web frameworks (FastAPI)
+- RESTful API design
+- Docker containerization
+- Automated testing
+- Production observability (logging, metrics)
+- Clean code architecture
+
+---
+
+## 📸 See It In Action
+
+### Interactive API Documentation
+![API Documentation](.github/images/validation-success.png)
+*Swagger UI with automatic validation and request tracing*
+
+### Real-Time Monitoring
+![Metrics Dashboard](.github/images/metrics-endpoint.png)
+*Prometheus metrics for production monitoring*
 
 ---
 
 ## 🚀 Quick Start
 
-### Option 1: Docker (Recommended)
+### Try It Yourself (2 minutes)
 
 ```bash
-# Using docker-compose (easiest)
-docker-compose up -d
+# 1. Clone and start with Docker
+git clone https://github.com/harveycyl/travel-readiness-sentinel.git
+cd travel-readiness-sentinel
+docker-compose up
 
-# Or using Docker directly
-docker build -t trs-api .
-docker run -p 8000:8000 trs-api
-
-# Access the API
+# 2. Open your browser
 open http://localhost:8000/docs
+
+# 3. Try the /validate endpoint with sample data
 ```
 
-### Option 2: API Server (Local Development)
+That's it! The interactive docs let you test the API directly in your browser.
 
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
+---
 
-# 2. Start the API server
-uvicorn src.api:app --reload
+## 🛠️ Technical Highlights
 
-# 3. Open interactive docs
-open http://localhost:8000/docs
+### **Backend Skills Demonstrated**
+
+| Skill | Implementation |
+|-------|---------------|
+| **API Development** | FastAPI with 5 REST endpoints, auto-generated OpenAPI docs |
+| **Data Validation** | Pydantic models with custom business logic validators |
+| **Testing** | 53 automated tests (100% pass rate), pytest framework |
+| **Containerization** | Multi-stage Docker build, docker-compose orchestration |
+| **Observability** | Structured JSON logging, Prometheus metrics, request tracing |
+| **Code Quality** | Type hints, modular architecture, abstract base classes |
+
+### **Architecture**
+
 ```
-
-### Option 3: Command Line
-
-```bash
-# Install and run validation
-pip install -r requirements.txt
-python main.py --itinerary examples/yaml/itinerary.yaml
+┌─────────────┐
+│   Client    │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────────────────────────┐
+│      FastAPI Application        │
+│  ┌──────────────────────────┐  │
+│  │  Logging Middleware      │  │ ← Request tracing
+│  └──────────────────────────┘  │
+│  ┌──────────────────────────┐  │
+│  │  Validation Engine       │  │ ← Business logic
+│  └──────────────────────────┘  │
+│  ┌──────────────────────────┐  │
+│  │  Metrics Collection      │  │ ← Prometheus
+│  └──────────────────────────┘  │
+└─────────────────────────────────┘
 ```
 
 ---
 
-## 📡 API Endpoints
+## 📊 Key Features
 
-### `GET /` - API Information
-Returns service metadata and documentation links.
+### For Users
+- 🌐 **RESTful API** - Standard HTTP endpoints, works with any client
+- 📤 **Multiple Input Formats** - JSON, YAML, or Excel files
+- 🔍 **Smart Validation** - Catches logical errors, not just data format issues
+- 📚 **Self-Documenting** - Interactive Swagger UI included
 
-```bash
-curl http://localhost:8000/
-```
-
-### `GET /health` - Health Check
-Monitoring endpoint for load balancers and uptime checks.
-
-```bash
-curl http://localhost:8000/health
-```
-
-**Response:**
-```json
-{
-  "status": "ok",
-  "version": "1.0.0",
-  "checks": {
-    "api": "operational",
-    "validation_engine": "operational"
-  }
-}
-```
-
-### `POST /validate` - Validate JSON Itinerary
-Validate travel data from JSON payload.
-
-```bash
-curl -X POST http://localhost:8000/validate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "trip_details": {
-      "destination": "Tokyo",
-      "start_date": "2025-04-10",
-      "end_date": "2025-04-17",
-      "total_duration_days": 7
-    },
-    "flights": [
-      {
-        "type": "arrival",
-        "flight_number": "NH110",
-        "arrival_date": "2025-04-10"
-      },
-      {
-        "type": "departure",
-        "flight_number": "NH111",
-        "departure_date": "2025-04-17"
-      }
-    ],
-    "accommodation": {
-      "hotel_name": "Park Hyatt Tokyo",
-      "check_in": "2025-04-10",
-      "check_out": "2025-04-17"
-    }
-  }'
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "destination": "Tokyo",
-  "total_checks": 3,
-  "passed_checks": 3,
-  "failed_checks": 0,
-  "checks": [
-    {
-      "check_name": "Arrival Date Alignment",
-      "passed": true,
-      "message": "Flight arrival (2025-04-10) matches hotel check-in"
-    },
-    {
-      "check_name": "Full Accommodation Coverage",
-      "passed": true,
-      "message": "Hotel covers full trip duration (7 nights >= 7 nights)"
-    },
-    {
-      "check_name": "Exit Strategy Alignment",
-      "passed": true,
-      "message": "Departure flight (2025-04-17) matches trip end date"
-    }
-  ]
-}
-```
-
-### `POST /upload` - Upload File for Validation
-Upload Excel (.xlsx) or YAML files for validation.
-
-```bash
-curl -X POST http://localhost:8000/upload \
-  -F "file=@examples/excel/itinerary_template.xlsx"
-```
-
-Returns the same validation response format as `/validate`.
-
----
-
-## 🧠 Validation Logic
-
-TRS performs **3 critical business logic checks**:
-
-### 1️⃣ Arrival Date Alignment
-**Ensures:** Flight arrival date matches hotel check-in date
-
-**Example Failure:**
-```
-❌ Flight lands on 2025-05-11, but hotel check-in is 2025-05-10
-```
-
-### 2️⃣ Full Accommodation Coverage
-**Ensures:** Hotel booking covers every night of the trip
-
-**Example Failure:**
-```
-❌ Trip is 7 nights, but hotel is only 5 nights (2-night gap!)
-```
-
-### 3️⃣ Exit Strategy Alignment
-**Ensures:** Departure flight aligns with trip end date
-
-**Example Failure:**
-```
-❌ Trip ends on 2025-05-17 but flight is 2025-05-16 (visa risk!)
-```
-
----
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────┐
-│         Client Applications         │
-│   (Web, Mobile, CLI, Other APIs)    │
-└──────────────┬──────────────────────┘
-               │
-               ▼
-┌─────────────────────────────────────┐
-│          FastAPI Layer              │
-│  • Request validation (Pydantic)    │
-│  • CORS middleware                  │
-│  • Exception handling               │
-│  • OpenAPI documentation            │
-└──────────────┬──────────────────────┘
-               │
-               ▼
-┌─────────────────────────────────────┐
-│       Validation Engine             │
-│  • Strategy Pattern                 │
-│  • CheckResult objects              │
-│  • Business logic checks            │
-└──────────────┬──────────────────────┘
-               │
-               ▼
-┌─────────────────────────────────────┐
-│         Domain Models               │
-│  • Pydantic models                  │
-│  • Type validation                  │
-│  • Data parsing                     │
-└─────────────────────────────────────┘
-```
-
-### Tech Stack
-
-- **Framework:** FastAPI 0.104+
-- **Server:** Uvicorn (ASGI)
-- **Validation:** Pydantic 2.0+
-- **Testing:** pytest (55 tests)
-- **File Parsing:** openpyxl (Excel), PyYAML
-- **Type Safety:** Python 3.9+ with full type hints
-
----
-
-## 📂 Project Structure
-
-```
-travel-readiness-sentinel/
-├── src/
-│   ├── api.py              # FastAPI application
-│   ├── config.py           # Environment configuration
-│   ├── schemas.py          # API request/response models
-│   ├── model.py            # Domain models (Pydantic)
-│   ├── validation.py       # Business logic checks
-│   └── excel_reader.py     # Excel file parser
-├── tests/
-│   ├── test_api.py         # API endpoint tests
-│   ├── test_validation.py  # Validation logic tests
-│   ├── test_models.py      # Model tests
-│   └── test_integration.py # End-to-end tests
-├── examples/
-│   ├── excel/              # Excel format examples
-│   └── yaml/               # YAML format examples
-├── main.py                 # CLI entry point
-├── requirements.txt        # Python dependencies
-├── .env.example           # Configuration template
-└── README.md              # This file
-```
+### For Operations
+- 🐳 **Docker Ready** - One command deployment
+- 📈 **Production Monitoring** - Prometheus metrics built-in
+- 📝 **Structured Logging** - JSON logs with request IDs for tracing
+- ✅ **Health Checks** - Kubernetes/load balancer compatible
 
 ---
 
 ## 🧪 Testing
 
+Comprehensive test coverage across all layers:
+
 ```bash
-# Run all tests
 pytest tests/ -v
 
-# Run with coverage report
-pytest --cov=src --cov-report=html
-
-# Run specific test file
-pytest tests/test_api.py -v
-
-# Run tests in watch mode
-pytest-watch
+# Results: 53 tests, 100% passing
+# ✅ Unit tests (models, validation logic)
+# ✅ Integration tests (API endpoints)
+# ✅ End-to-end tests (full workflows)
 ```
-
-**Test Coverage:**
-- ✅ 55 tests total
-- ✅ 100% pass rate
-- ✅ API endpoints (9 tests)
-- ✅ Validation logic (11 tests)
-- ✅ Models (9 tests)
-- ✅ Integration (8 tests)
-- ✅ Excel parsing (8 tests)
 
 ---
 
-## � Input Formats
+## 📖 API Endpoints
 
-### Excel Format (User-Friendly)
-
-Use `examples/excel/itinerary_template.xlsx` as a template:
-
-| Field | Value |
-|-------|-------|
-| Trip Destination | Tokyo |
-| Trip Start Date | 2025-04-10 |
-| Trip End Date | 2025-04-17 |
-| ... | ... |
-
-### YAML Format (Developer-Friendly)
-
-```yaml
-trip_details:
-  destination: Tokyo
-  start_date: "2025-04-10"
-  end_date: "2025-04-17"
-  total_duration_days: 7
-
-flights:
-  - type: arrival
-    flight_number: NH110
-    arrival_date: "2025-04-10"
-  - type: departure
-    flight_number: NH111
-    departure_date: "2025-04-17"
-
-accommodation:
-  hotel_name: Park Hyatt Tokyo
-  check_in: "2025-04-10"
-  check_out: "2025-04-17"
-```
-
-### JSON Format (API)
-
-See the `/validate` endpoint example above.
+| Endpoint | Purpose | Example |
+|----------|---------|---------|
+| `GET /health` | Service health check | Returns operational status |
+| `GET /metrics` | Prometheus metrics | Request counts, latency, errors |
+| `POST /validate` | Validate JSON itinerary | Returns validation results |
+| `POST /upload` | Validate Excel/YAML file | Accepts file upload |
+| `GET /docs` | Interactive documentation | Swagger UI |
 
 ---
 
-## ⚙️ Configuration
+## 💻 Technology Stack
 
-Create a `.env` file (see `.env.example`):
+**Core:**
+- Python 3.9+
+- FastAPI (async web framework)
+- Pydantic (data validation)
+- Uvicorn (ASGI server)
 
-```bash
-# API Configuration
-APP_NAME=Travel Readiness Sentinel API
-APP_VERSION=1.0.0
-DEBUG=true
+**Observability:**
+- Prometheus (metrics)
+- Structured JSON logging
+- Request tracing
 
-# CORS Settings
-CORS_ORIGINS=["http://localhost:3000","http://localhost:8080"]
+**Development:**
+- pytest (testing)
+- Docker & Docker Compose
+- Type hints throughout
 
-# Server Settings
-HOST=0.0.0.0
-PORT=8000
+---
 
-# File Upload Settings
-MAX_UPLOAD_SIZE_MB=10
-ALLOWED_FILE_EXTENSIONS=[".xlsx",".yaml",".yml"]
-```
+## 🎓 What I Learned
+
+Building this project taught me:
+
+1. **API Design** - How to design intuitive, RESTful endpoints
+2. **Data Validation** - Implementing business logic vs schema validation
+3. **Production Readiness** - Logging, metrics, health checks, error handling
+4. **Testing Strategy** - Unit, integration, and end-to-end test patterns
+5. **Containerization** - Multi-stage Docker builds, optimization
+6. **Code Organization** - Clean architecture with separation of concerns
 
 ---
 
 ## 🚢 Deployment
 
-### Docker (Recommended)
-
-**Using docker-compose (Development):**
-```bash
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f api
-
-# Stop services
-docker-compose down
-```
-
-**Using Docker directly:**
-```bash
-# Build image
-docker build -t trs-api .
-
-# Run container
-docker run -d \
-  --name trs-api \
-  -p 8000:8000 \
-  --restart unless-stopped \
-  trs-api
-
-# View logs
-docker logs -f trs-api
-
-# Stop container
-docker stop trs-api && docker rm trs-api
-```
-
-**Production deployment with resource limits:**
-```bash
-docker run -d \
-  --name trs-api \
-  -p 8000:8000 \
-  --memory="512m" \
-  --cpus="1" \
-  --restart=unless-stopped \
-  -e DEBUG=false \
-  -e CORS_ORIGINS='["https://yourdomain.com"]' \
-  trs-api
-```
-
 ### Local Development
-
 ```bash
-uvicorn src.api:app --reload --host 0.0.0.0 --port 8000
+python -m uvicorn src.api:app --reload
 ```
 
-### Production (No Docker)
-
+### Production (Docker)
 ```bash
-uvicorn src.api:app --host 0.0.0.0 --port 8000 --workers 4
+docker build -t trs-api .
+docker run -p 8000:8000 \
+  -e LOG_FORMAT=json \
+  -e ENABLE_METRICS=true \
+  trs-api
 ```
 
 ### Cloud Platforms
+Works with: AWS ECS, Google Cloud Run, Azure Container Instances, Railway, Render
 
-**AWS ECS/Fargate:**
-```bash
-# Push to ECR
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account>.dkr.ecr.us-east-1.amazonaws.com
-docker tag trs-api:latest <account>.dkr.ecr.us-east-1.amazonaws.com/trs-api:latest
-docker push <account>.dkr.ecr.us-east-1.amazonaws.com/trs-api:latest
+---
+
+## 📁 Project Structure
+
 ```
-
-**Google Cloud Run:**
-```bash
-# Build and deploy
-gcloud builds submit --tag gcr.io/<project-id>/trs-api
-gcloud run deploy trs-api --image gcr.io/<project-id>/trs-api --platform managed
-```
-
-**Azure Container Instances:**
-```bash
-# Push to ACR
-az acr build --registry <registry-name> --image trs-api:latest .
-az container create --resource-group <group> --name trs-api --image <registry>.azurecr.io/trs-api:latest --ports 8000
-```
-
-**Heroku:**
-```bash
-heroku container:push web
-heroku container:release web
+travel-readiness-sentinel/
+├── src/
+│   ├── __main__.py          # CLI entry point
+│   ├── api.py               # FastAPI application
+│   ├── core/                # Business logic
+│   │   ├── model.py         # Data models
+│   │   ├── validation.py    # Validation rules
+│   │   └── schemas.py       # API schemas
+│   └── ingestion/           # File parsers
+│       ├── excel.py         # Excel reader
+│       └── yaml.py          # YAML reader
+├── tests/                   # 53 automated tests
+├── examples/                # Sample itineraries
+├── Dockerfile               # Container definition
+└── docker-compose.yml       # Local development
 ```
 
 ---
 
-## � Examples
+## 🤝 Contact
 
-### Perfect Itinerary (All Checks Pass)
-
-```bash
-python main.py --itinerary examples/yaml/itinerary.yaml
-```
-
-**Output:**
-```
-✅ [PASS] Arrival Date Alignment
-✅ [PASS] Full Accommodation Coverage
-✅ [PASS] Exit Strategy Alignment
-🎉 TRSS Status: READY FOR DEPARTURE
-```
-
-### Problematic Itinerary (Business Logic Errors)
-
-```bash
-python main.py --itinerary examples/yaml/itinerary_wrong.yaml
-```
-
-**Output:**
-```
-❌ [FAIL] Arrival Date Alignment: Flight lands on 2025-05-11, but Hotel check-in is 2025-05-10
-❌ [FAIL] Full Accommodation Coverage: Gap Detected! Trip is 7 nights, but hotel is only 5 nights.
-❌ [FAIL] Exit Strategy Alignment: Visa Risk! Trip ends on 2025-05-17 but flight is 2025-05-16
-🚨 TRSS Status: GROUNDED (3 Critical Errors Found)
-```
-
-### Invalid Data (Schema Validation Errors)
-
-```bash
-python main.py --itinerary examples/yaml/itinerary_invalid.yaml
-```
-
-**Output:**
-```
-Data Integrity Error: 3 validation errors for Itinerary
-trip_details.total_duration_days
-  Field required
-flights.0.flight_number
-  Value error, Invalid Flight Number
-flights.1
-  Value error, Departure flights must have departure_date
-```
-
----
-
-## 🛣️ Roadmap
-
-### ✅ Phase 1: FastAPI Implementation (Complete)
-- REST API with 4 endpoints
-- Interactive Swagger documentation
-- File upload support
-- Comprehensive testing
-
-### ✅ Phase 2: Docker Containerization (Complete)
-- Multi-stage Dockerfile (optimized image size)
-- Docker Compose for local development
-- Health checks and graceful shutdown
-- Production-ready container configuration
-- Cloud deployment examples
-
-### 📋 Phase 3: Observability (Planned)
-- Structured logging (JSON format)
-- Request correlation IDs
-- Prometheus metrics
-- Distributed tracing
-
-### 🤖 Phase 4: AI Integration (Planned)
-- LLM-powered text extraction
-- Parse itineraries from emails
-- Natural language input
-- Smart data normalization
-
----
-
-## 🤝 Contributing
-
-This is a portfolio project demonstrating production-grade Python development. Contributions, issues, and feature requests are welcome!
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+**Harvey Lam**
+- 📧 Email: harveylam92126@gmail.com
+- 💼 GitHub: [@harveycyl](https://github.com/harveycyl)
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 👨‍💻 Author
-
-**Harvey Lam**
-- Portfolio: [Your Portfolio URL]
-- LinkedIn: [Your LinkedIn]
-- Email: harveylam92126@gmail.com
-
----
-
-## 🙏 Acknowledgments
-
-- **FastAPI** - Modern, fast web framework
-- **Pydantic** - Data validation using Python type hints
-- **Uvicorn** - Lightning-fast ASGI server
-
----
-
-## 📝 Note to Hiring Managers
-
-This repository demonstrates my approach to building **production-grade microservices**. The "travel validation" domain is a semantic re-skin of a **Data Readiness System** I architected professionally.
-
-**Key Concepts Demonstrated:**
-- ✅ **API Design** - RESTful endpoints with proper HTTP semantics
-- ✅ **Data Validation** - Pydantic models with business logic
-- ✅ **Testing** - Comprehensive test suite with 55 tests
-- ✅ **Architecture** - Clean separation of concerns (Strategy Pattern)
-- ✅ **Documentation** - Auto-generated OpenAPI specs
-- ✅ **Type Safety** - Full type hints throughout
-- ✅ **Error Handling** - Structured error responses
-- ✅ **Configuration** - Environment-based settings
-
-**Real-World Mapping:**
-- `Audit Period Completeness` → `Hotel Duration Coverage`
-- `Cut-off Testing (Dates)` → `Flight/Hotel Alignment`
-- `Evidence Validation` → `Ticket Validity Checks`
-
-The underlying patterns and architecture are production-tested and scalable.
+MIT License - feel free to use this project as a reference or starting point for your own work.
 
 ---
 
 <div align="center">
 
-**[⬆ Back to Top](#-travel-readiness-sentinel)**
+**Built with ❤️ to demonstrate production-grade Python development**
 
-Made with ❤️ and FastAPI
+*This project showcases real-world backend engineering skills applicable to any API-driven application*
 
 </div>

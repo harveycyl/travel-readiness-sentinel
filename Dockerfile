@@ -28,7 +28,6 @@ COPY --from=builder /root/.local /home/appuser/.local
 
 # Copy application code
 COPY --chown=appuser:appuser src/ ./src/
-COPY --chown=appuser:appuser main.py .
 COPY --chown=appuser:appuser examples/ ./examples/
 
 # Switch to non-root user

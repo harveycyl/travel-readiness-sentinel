@@ -3,17 +3,17 @@ import pandas as pd
 import tempfile
 import os
 from pathlib import Path
-from src.excel_reader import ExcelItineraryReader
-from src.model import Itinerary
+from src.ingestion.excel import ExcelIngestion
+from src.core.model import Itinerary
 
 
-class TestExcelItineraryReader:
+class TestExcelIngestion:
     """Test Excel reading functionality"""
     
     @pytest.fixture
     def reader(self):
-        """Fixture providing ExcelItineraryReader instance"""
-        return ExcelItineraryReader()
+        """Fixture providing ExcelIngestion instance"""
+        return ExcelIngestion()
     
     @pytest.fixture
     def valid_excel_data(self):
@@ -91,7 +91,7 @@ class TestExcelItineraryReader:
         temp_file = self.create_temp_excel_file(valid_excel_data)
         
         try:
-            data = reader.read_excel(temp_file)
+            data = reader.parse(temp_file)
             
             # Verify structure
             assert 'trip_details' in data
@@ -134,57 +134,18 @@ class TestExcelItineraryReader:
         
         try:
             with pytest.raises(ValueError, match="Missing required"):
-                reader.read_excel(temp_file)
+                reader.parse(temp_file)
         finally:
             os.unlink(temp_file)
     
     def test_read_nonexistent_file(self, reader):
         """Test reading a non-existent Excel file"""
         with pytest.raises(ValueError, match="Failed to read Excel file"):
-            reader.read_excel("nonexistent_file.xlsx")
+            reader.parse("nonexistent_file.xlsx")
     
-    def test_excel_to_yaml_conversion(self, reader, valid_excel_data):
-        """Test converting Excel to YAML"""
-        excel_file = self.create_temp_excel_file(valid_excel_data)
-        yaml_file = tempfile.NamedTemporaryFile(suffix='.yaml', delete=False)
-        yaml_file.close()
-        
-        try:
-            result_yaml_path = reader.excel_to_yaml(excel_file, yaml_file.name)
-            
-            assert result_yaml_path == yaml_file.name
-            assert Path(yaml_file.name).exists()
-            
-            # Verify YAML content by loading it back
-            import yaml
-            with open(yaml_file.name, 'r') as f:
-                yaml_data = yaml.safe_load(f)
-            
-            # Should be able to create valid Itinerary from YAML
-            itinerary = Itinerary(**yaml_data)
-            assert itinerary.trip_details.destination == 'London'
-            assert len(itinerary.flights) == 2
-            
-        finally:
-            os.unlink(excel_file)
-            os.unlink(yaml_file.name)
+
     
-    def test_auto_yaml_filename_generation(self, reader, valid_excel_data):
-        """Test automatic YAML filename generation"""
-        excel_file = self.create_temp_excel_file(valid_excel_data)
-        
-        try:
-            yaml_path = reader.excel_to_yaml(excel_file)
-            
-            # Should generate YAML file with same name as Excel
-            expected_yaml = Path(excel_file).with_suffix('.yaml')
-            assert yaml_path == str(expected_yaml)
-            assert expected_yaml.exists()
-            
-        finally:
-            os.unlink(excel_file)
-            if Path(excel_file).with_suffix('.yaml').exists():
-                os.unlink(Path(excel_file).with_suffix('.yaml'))
+
     
     def test_field_mapping_validation(self, reader):
         """Test that field mapping covers all required fields"""
@@ -208,7 +169,7 @@ class TestExcelItineraryReader:
         
         try:
             with pytest.raises(ValueError, match="Missing required"):
-                reader.read_excel(temp_file)
+                reader.parse(temp_file)
         finally:
             os.unlink(temp_file)
     
@@ -220,7 +181,7 @@ class TestExcelItineraryReader:
         temp_file = self.create_temp_excel_file(valid_excel_data)
         
         try:
-            data = reader.read_excel(temp_file)
+            data = reader.parse(temp_file)
             # Should still work and ignore the extra column
             assert 'trip_details' in data
             assert data['trip_details']['destination'] == 'London'

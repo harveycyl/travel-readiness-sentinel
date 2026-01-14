@@ -1,7 +1,7 @@
 import pytest
 from datetime import date
 from pydantic import ValidationError
-from src.model import Flight, Hotel, TripContext, Itinerary
+from src.core.model import Flight, Hotel, TripContext, Itinerary
 
 
 class TestFlight:

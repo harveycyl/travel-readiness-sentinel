@@ -6,9 +6,9 @@ from datetime import date
 from unittest.mock import patch
 from io import StringIO
 import sys
-from src.model import Itinerary
-from src.validation import get_all_checks
-import main
+from src.core.model import Itinerary
+from src.core.validation import get_all_checks
+from src import __main__ as main
 
 
 class TestMainIntegration:
