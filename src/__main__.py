@@ -3,9 +3,10 @@ import argparse
 import sys
 from pathlib import Path
 from pydantic import ValidationError
-from src.model import Itinerary
-from src.validation import get_all_checks
-from src.excel_reader import ExcelItineraryReader
+from .core.model import Itinerary
+from .core.validation import get_all_checks
+from .ingestion.excel import ExcelIngestion
+from .ingestion.yaml import YAMLIngestion
 
 def load_itinerary(path: str) -> Itinerary:
     """Load itinerary from either Excel (.xlsx) or YAML (.yaml/.yml) file"""
@@ -19,13 +20,13 @@ def load_itinerary(path: str) -> Itinerary:
         # Determine file type and load accordingly
         if file_path.suffix.lower() == '.xlsx':
             print(f"📊 Reading Excel file: {path}")
-            reader = ExcelItineraryReader()
-            raw_data = reader.read_excel(path)
+            reader = ExcelIngestion()
+            raw_data = reader.parse(path)
             print("✅ Excel file successfully parsed")
         elif file_path.suffix.lower() in ['.yaml', '.yml']:
             print(f"📄 Reading YAML file: {path}")
-            with open(path, 'r') as f:
-                raw_data = yaml.safe_load(f)
+            reader = YAMLIngestion()
+            raw_data = reader.parse(path)
         else:
             print(f"Error: Unsupported file type. Please use .xlsx, .yaml, or .yml files.")
             sys.exit(1)

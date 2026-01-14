@@ -3,8 +3,8 @@ from datetime import date
 from unittest.mock import patch
 from io import StringIO
 import sys
-from src.model import Flight, Hotel, TripContext, Itinerary
-from src.validation import (
+from src.core.model import Flight, Hotel, TripContext, Itinerary
+from src.core.validation import (
     ReadinessCheck, 
     ArrivalAlignmentCheck, 
     DurationCoverageCheck, 

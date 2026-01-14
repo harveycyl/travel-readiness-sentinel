@@ -9,20 +9,31 @@ from pydantic import ValidationError as PydanticValidationError
 from pathlib import Path
 import tempfile
 import yaml
+import time
 from typing import Union
 
 from .config import settings
-from .model import Itinerary
-from .validation import run_all_checks
-from .excel_reader import ExcelItineraryReader
-from .schemas import (
+from .core.model import Itinerary
+from .core.validation import run_all_checks
+from .ingestion.excel import ExcelIngestion
+from .ingestion.yaml import YAMLIngestion
+from .core.schemas import (
     ValidationResponse,
     ValidationCheckResult,
     ValidationErrorResponse,
     HealthResponse,
     APIInfoResponse
 )
+from .logging_config import setup_logging, logger
+from .middleware import LoggingMiddleware
+from .metrics import metrics, get_metrics
 
+
+# Application startup time for uptime tracking
+app_start_time = time.time()
+
+# Initialize logging
+setup_logging(log_level=settings.log_level, log_format=settings.log_format)
 
 # Create FastAPI application
 app = FastAPI(
@@ -42,6 +53,16 @@ app.add_middleware(
     allow_methods=settings.cors_methods,
     allow_headers=settings.cors_headers,
 )
+
+# Add logging middleware
+if settings.enable_metrics:
+    app.add_middleware(LoggingMiddleware)
+    logger.info("Logging middleware enabled")
+
+# Set application version in metrics
+if settings.enable_metrics:
+    metrics.set_app_version(settings.app_version)
+    logger.info("Metrics collection enabled")
 
 
 # Exception handlers
@@ -89,16 +110,49 @@ async def root():
 async def health_check():
     """
     Health check endpoint for monitoring and load balancers.
-    Returns service status and version information.
+    Returns service status, version information, and basic metrics.
     """
-    return HealthResponse(
+    uptime_seconds = int(time.time() - app_start_time)
+    
+    checks = {
+        "api": "operational",
+        "validation_engine": "operational"
+    }
+    
+    if settings.enable_metrics:
+        checks["metrics"] = "operational"
+    
+    response = HealthResponse(
         status="ok",
         version=settings.app_version,
-        checks={
-            "api": "operational",
-            "validation_engine": "operational"
-        }
+        checks=checks
     )
+    
+    # Add uptime to response (not in schema, but useful)
+    response_dict = response.model_dump()
+    response_dict["uptime_seconds"] = uptime_seconds
+    
+    return response_dict
+
+
+@app.get("/metrics")
+async def metrics_endpoint():
+    """
+    Prometheus metrics endpoint.
+    Returns metrics in Prometheus exposition format.
+    
+    Metrics include:
+    - HTTP request counts and latency
+    - Validation check results
+    - File upload statistics
+    """
+    if not settings.enable_metrics:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Metrics collection is disabled"
+        )
+    
+    return get_metrics()
 
 
 @app.post("/validate", response_model=ValidationResponse)
@@ -140,6 +194,12 @@ async def validate_itinerary(itinerary: Itinerary):
     """
     # Run all validation checks
     check_results = run_all_checks(itinerary)
+    
+    # Record metrics for each check
+    if settings.enable_metrics:
+        metrics.record_validation_request("json")
+        for result in check_results:
+            metrics.record_validation_check(result.check_name, result.passed)
     
     # Convert to API schema
     api_checks = [
@@ -197,11 +257,13 @@ async def upload_and_validate(
     try:
         # Parse file based on extension
         if file_ext == '.xlsx':
-            reader = ExcelItineraryReader()
-            raw_data = reader.read_excel(temp_path)
+            reader = ExcelIngestion()
+            raw_data = reader.parse(temp_path)
+            source_type = "excel"
         elif file_ext in ['.yaml', '.yml']:
-            with open(temp_path, 'r') as f:
-                raw_data = yaml.safe_load(f)
+            reader = YAMLIngestion()
+            raw_data = reader.parse(temp_path)
+            source_type = "yaml"
         else:
             raise ValueError(f"Unsupported file extension: {file_ext}")
         
@@ -210,6 +272,13 @@ async def upload_and_validate(
         
         # Run validation checks
         check_results = run_all_checks(itinerary)
+        
+        # Record metrics
+        if settings.enable_metrics:
+            metrics.record_validation_request(source_type)
+            metrics.record_file_upload(file_ext.lstrip('.'), success=True)
+            for result in check_results:
+                metrics.record_validation_check(result.check_name, result.passed)
         
         # Convert to API schema
         api_checks = [
