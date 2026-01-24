@@ -34,6 +34,15 @@ class Settings(BaseSettings):
     log_format: str = "json"  # "json" or "text"
     enable_metrics: bool = True
     
+    # Notion Integration (Optional)
+    notion_api_token: str = ""
+    notion_page_id: str = ""
+    
+    @property
+    def notion_enabled(self) -> bool:
+        """Check if Notion integration is properly configured."""
+        return bool(self.notion_api_token and self.notion_page_id)
+    
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

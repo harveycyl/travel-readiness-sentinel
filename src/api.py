@@ -308,6 +308,100 @@ async def upload_and_validate(
         Path(temp_path).unlink(missing_ok=True)
 
 
+@app.post("/export/notion")
+async def export_to_notion_endpoint(itinerary: Itinerary):
+    """
+    Validate itinerary and export results to Notion.
+    
+    This endpoint combines validation with automatic Notion export.
+    It validates the itinerary, exports the results to a Notion page,
+    and returns both validation results and the Notion page URL.
+    
+    **Requirements:**
+    - Notion integration must be configured (NOTION_API_TOKEN and NOTION_PAGE_ID)
+    - See README for setup instructions
+    
+    **Response includes:**
+    - All standard validation results
+    - `notion_url`: Direct link to the created Notion page
+    - `notion_page_id`: ID of the created page
+    - `exported_at`: Timestamp of export
+    """
+    # Check if Notion is configured
+    if not settings.notion_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "error": "NotionNotConfigured",
+                "message": "Notion integration is not configured. Please set NOTION_API_TOKEN and NOTION_PAGE_ID in your .env file.",
+                "documentation": "See README for setup instructions"
+            }
+        )
+    
+    # Run validation (same as /validate endpoint)
+    check_results = run_all_checks(itinerary)
+    
+    # Record metrics
+    if settings.enable_metrics:
+        metrics.record_validation_request("json")
+        for result in check_results:
+            metrics.record_validation_check(result.check_name, result.passed)
+    
+    # Convert to API schema
+    api_checks = [
+        ValidationCheckResult(
+            check_name=result.check_name,
+            passed=result.passed,
+            message=result.message
+        )
+        for result in check_results
+    ]
+    
+    # Calculate summary
+    passed_count = sum(1 for r in check_results if r.passed)
+    failed_count = len(check_results) - passed_count
+    
+    validation_response = ValidationResponse(
+        status="success" if failed_count == 0 else "failed",
+        destination=itinerary.trip_details.destination,
+        total_checks=len(check_results),
+        passed_checks=passed_count,
+        failed_checks=failed_count,
+        checks=api_checks
+    )
+    
+    # Export to Notion
+    try:
+        from .integrations.notion_exporter import export_to_notion
+        
+        logger.info(f"Exporting validation results to Notion for {itinerary.trip_details.destination}")
+        export_result = await export_to_notion(
+            validation_response=validation_response,
+            notion_token=settings.notion_api_token,
+            parent_page_id=settings.notion_page_id
+        )
+        
+        # Add Notion export info to response
+        response_dict = validation_response.model_dump(mode='json')
+        response_dict["notion_export"] = export_result
+        
+        logger.info(f"Successfully exported to Notion: {export_result['notion_url']}")
+        return response_dict
+        
+    except Exception as e:
+        logger.error(f"Failed to export to Notion: {e}")
+        # Still return validation results even if Notion export fails
+        response_dict = validation_response.model_dump(mode='json')
+        response_dict["notion_export"] = {
+            "error": str(e),
+            "message": "Validation completed but Notion export failed"
+        }
+        return JSONResponse(
+            status_code=status.HTTP_207_MULTI_STATUS,
+            content=response_dict
+        )
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
